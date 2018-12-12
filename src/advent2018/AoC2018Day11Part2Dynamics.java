@@ -1,6 +1,11 @@
 package advent2018;
 
-public class AoC2018Day11Part2 {
+import utils.Point;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class AoC2018Day11Part2Dynamics {
     private static void testPowerLevel() {
         int result;
 
@@ -53,20 +58,30 @@ public class AoC2018Day11Part2 {
     private static final int SIZE = 300;
 
     public static String findLargest(int serialNumber) {
+        Map<Point, Integer> sums = new HashMap<>();
+        for (int x = 1; x <= SIZE; ++x) {
+            for (int y = 1; y <= SIZE; ++y) {
+                Point key = new Point(x, y);
+                int value = powerLevel(key.x, key.y, serialNumber)
+                        + (key.x == 1 ? 0 : sums.get(new Point(key.x - 1, key.y)))
+                        + (key.y == 1 ? 0 : sums.get(new Point(key.x, key.y - 1)))
+                        - (key.x == 1 || key.y == 1 ? 0 : sums.get(new Point(key.x - 1, key.y - 1)));
+                sums.put(key, value);
+            }
+        }
+
         Result maxResult = null;
         for (int size = 1; size <= SIZE; ++size) {
-            for (int y = 1; y <= SIZE - size + 1; ++y) {
-                for (int x = 1; x <= SIZE - size + 1; ++x) {
+            for (int x = 1; x <= SIZE - size + 1; ++x) {
+                for (int y = 1; y <= SIZE - size + 1; ++y) {
                     Result result = new Result();
                     result.x = x;
                     result.y = y;
                     result.size = size;
-                    result.totalPowerLevel = 0;
-                    for (int dy = y; dy < y + size; ++dy) {
-                        for (int dx = x; dx < x + size; ++dx) {
-                            result.totalPowerLevel += powerLevel(dx, dy, serialNumber);
-                        }
-                    }
+                    result.totalPowerLevel = sums.get(new Point(x + size - 1, y + size - 1))//+
+                            - (x == 1 ? 0 : sums.get(new Point(x - 1, y + size - 1)))
+                            - (y == 1 ? 0 : sums.get(new Point(x + size - 1, y - 1)))
+                            + (x == 1 || y == 1 ? 0 : sums.get(new Point(x - 1, y - 1)));
                     if (maxResult == null || maxResult.totalPowerLevel < result.totalPowerLevel) {
                         maxResult = result;
                     }
